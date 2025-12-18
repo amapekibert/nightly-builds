@@ -47,8 +47,12 @@ jobs:
           echo "KERNEL_BRANCH=$DEFAULT_BRANCH" >> $GITHUB_ENV
 
       - name: Clone kernel sources
-        run: |
-          git clone https://github.com/sm7150-mainline/linux.git --single-branch --branch ${{ env.KERNEL_BRANCH }} --depth 1
+        uses: actions/checkout@v4
+        with:
+          repository: sm7150-mainline/linux
+          ref: ${{ env.KERNEL_BRANCH }}
+          path: linux
+          fetch-depth: 1
 
       - name: Choose any SM7150 device in pmbootstrap to build kernel
         run: |
