@@ -65,7 +65,7 @@ jobs:
           source ../pmbootstrap/helpers/envkernel.sh
           make ARCH=arm64 LLVM=1 defconfig sm7150.config
           make ARCH=arm64 LLVM=1 -j$(nproc)
-          pmbootstrap build --envkernel linux-postmarketos-qcom-sm7150
+          pmbootstrap build --arch=aarch64 --envkernel linux-postmarketos-qcom-sm7150
 
       - name: Create artifact directory
         run: |
