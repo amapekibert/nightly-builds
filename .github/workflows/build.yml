@@ -12,7 +12,7 @@ jobs:
   build-image:
     strategy:
       matrix:
-        version: ["next", "default"]
+        version: ["default"]
 
     runs-on: ubuntu-latest
     steps:
