@@ -4,48 +4,40 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 0 * * 5' # Run every friday at midnight
-
 env:
   KERNEL_BRANCH: next
-
 jobs:
   build-image:
     strategy:
       matrix:
         version: ["default"]
-
     runs-on: ubuntu-latest
     steps:
       - name: Check out build configurations
         uses: actions/checkout@v4
-
       - name: Substitute placeholders in configs
         run: |
           find . -type f -name "*.cfg" -exec sed -i "s|HOME|$(echo $HOME)|;s|NPROC|$(nproc)|" {} +
-
       - name: Install pmbootstrap from git
         run: |
           git clone --depth=1 https://gitlab.postmarketos.org/postmarketOS/pmbootstrap/
           mkdir -p ~/.local/bin
           ln -s "$PWD/pmbootstrap/pmbootstrap.py" ~/.local/bin/pmbootstrap
           pmbootstrap --version
-
       - name: Set up pmaports
         run: |
-          echo -e '\n\n' | pmbootstrap init || true
+          echo -e "\n\nedge\nxiaomi\nsweet_k6a\ngnome-mobile\nn\n" | pmbootstrap init || true
           cd ~/.local/var/pmbootstrap/cache_git/pmaports
           git remote add sm7150 https://github.com/sm7150-mainline/pmaports.git
           DEFAULT_BRANCH=$(git remote show sm7150 | awk '/HEAD branch/ {print $NF}')
           git fetch sm7150 $DEFAULT_BRANCH
           git reset --hard sm7150/$DEFAULT_BRANCH
-
       - name: Check kernel branch
         if: matrix.version == 'default'
         run: |
-          DEFAULT_BRANCH=$(curl -s  https://api.github.com/repos/sm7150-mainline/linux | jq -r '.default_branch')
+          DEFAULT_BRANCH=$(curl -s https://api.github.com/repos/sm7150-mainline/linux | jq -r '.default_branch')
           echo "Default branch is $DEFAULT_BRANCH"
           echo "KERNEL_BRANCH=$DEFAULT_BRANCH" >> $GITHUB_ENV
-
       - name: Clone kernel sources
         uses: actions/checkout@v4
         with:
@@ -53,11 +45,9 @@ jobs:
           ref: ${{ env.KERNEL_BRANCH }}
           path: linux
           fetch-depth: 1
-
       - name: Choose any SM7150 device in pmbootstrap to build kernel
         run: |
           cp xiaomi-davinci.cfg ~/.config/pmbootstrap.cfg
-
       - name: Compile kernel with envkernel
         run: |
           cd linux
@@ -66,21 +56,18 @@ jobs:
           make ARCH=arm64 LLVM=1 defconfig sm7150.config
           make ARCH=arm64 LLVM=1 -j$(nproc)
           pmbootstrap build --arch=aarch64 --envkernel linux-postmarketos-qcom-sm7150
-
       - name: Create artifact directory
         run: |
           mkdir out
-
       - name: Build xiaomi-sweet_k6a
         run: |
           cp xiaomi-sweet_k6a.cfg ~/.config/pmbootstrap.cfg
           pmbootstrap install --password 123
           pmbootstrap export
-          cp /tmp/postmarketOS-export/boot.img out/boot-xiaomi-sweeet_k6a.img
+          cp /tmp/postmarketOS-export/boot.img out/boot-xiaomi-sweet_k6a.img
           cp /tmp/postmarketOS-export/xiaomi-sweet_k6a.img out/rootfs-xiaomi-sweet_k6a.img
           xz -T0 -9e -v out/rootfs-xiaomi-sweet_k6a.img
           echo -e "n\nn\ny\n" | pmbootstrap zap
-
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
