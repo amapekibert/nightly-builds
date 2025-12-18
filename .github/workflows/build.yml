@@ -70,7 +70,7 @@ jobs:
       - name: Build xiaomi-sweet_k6a
         run: |
           cp xiaomi-sweet_k6a.cfg ~/.config/pmbootstrap.cfg
-          pmbootstrap install --password 147147
+          pmbootstrap install --password 123
           pmbootstrap export
           cp /tmp/postmarketOS-export/boot.img out/boot-xiaomi-sweeet_k6a.img
           cp /tmp/postmarketOS-export/xiaomi-sweet_k6a.img out/rootfs-xiaomi-sweet_k6a.img
